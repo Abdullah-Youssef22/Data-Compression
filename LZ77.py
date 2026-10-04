@@ -42,3 +42,18 @@ def lz77_compress(word):
     return tags
 
 
+def lz77_decompress(tags):
+    decompressed = ''
+    for tag in tags:
+        if tag.offset == 0 and tag.length == 0:
+            decompressed += tag.next_char
+        else:
+            start_index = len(decompressed) - tag.offset
+            for i in range(tag.length):
+                decompressed += decompressed[start_index + i]
+            decompressed += tag.next_char
+    return decompressed
+
+def print_tags(tags):
+    for tag in tags:
+        print(f"({tag.offset}, {tag.length}, '{tag.next_char}')")
