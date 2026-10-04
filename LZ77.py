@@ -1,2 +1,7 @@
-x = int(5 + (122 / 10))
-print(x)
+from dataclasses import dataclass
+
+@dataclass 
+class Tag:
+    offset: int
+    length: int
+    next_char: str
