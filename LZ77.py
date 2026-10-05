@@ -6,54 +6,67 @@ class Tag:
     length: int
     next_char: str
 
-def lz77_compress(word):
-    i=0
+def lz77_compress(word, search_size=255):
     tags = []
+    i = 0
+    
     while i < len(word):
-        offset = 0
-        length = 0
-        next_char = ''
-        search_start = max(0, i - 255)
-
-        while i < len(word):
-            j = i -1
-            longest_len = 0 
-            farest_pos = 0
-
-            while j >= search_start:
-                k = 0
-                while (i + k < len(word)) and (word[j + k] == word[i + k]):
-                    k += 1
-                if k > longest_len:
-                    longest_len = k
-                    farest_pos = j
-                j -= 1
-
-            if longest_len > 0:
-                offset = i - farest_pos
-                length = longest_len
-                next_char = word[i + longest_len] if (i + longest_len) < len(word) else ''
-                tags.append(Tag(offset, length, next_char))
-                i += longest_len + 1
-            else:
-                next_char = word[i]
-                tags.append(Tag(0, 0, next_char))
-                i += 1
+        search_start = max(0, i - search_size)
+        best_offset = 0
+        best_length = 0
+        
+        # جرّب كل بوزيشن في الـ search buffer
+        for j in range(search_start, i):
+            k = 0
+            # اسمح بالـ overlap (زي الـ PDF) — لو مش عايزه ضيف: j + k < i
+            while (i + k < len(word)) and (word[j + k] == word[i + k]):
+                k += 1
+            
+            if k > best_length:
+                best_length = k
+                best_offset = i - j
+        
+        # لو لقينا match
+        if best_length > 0:
+            next_char = word[i + best_length] if (i + best_length) < len(word) else ''
+            tags.append(Tag(best_offset, best_length, next_char))
+            i += best_length + (1 if next_char else 0)
+        else:
+            tags.append(Tag(0, 0, word[i]))
+            i += 1
+    
     return tags
 
 
 def lz77_decompress(tags):
-    decompressed = ''
+    decompressed = []
     for tag in tags:
         if tag.offset == 0 and tag.length == 0:
-            decompressed += tag.next_char
+            decompressed.append(tag.next_char)
         else:
-            start_index = len(decompressed) - tag.offset
-            for i in range(tag.length):
-                decompressed += decompressed[start_index + i]
-            decompressed += tag.next_char
-    return decompressed
+            start = len(decompressed) - tag.offset
+            for k in range(tag.length):
+                decompressed.append(decompressed[start + k])
+            if tag.next_char:
+                decompressed.append(tag.next_char)
+    return ''.join(decompressed)
+
 
 def print_tags(tags):
     for tag in tags:
         print(f"({tag.offset}, {tag.length}, '{tag.next_char}')")
+
+
+def main():
+    word = input("Enter a string to compress: ")
+    tags = lz77_compress(word)
+    print("Compressed tags:")
+    print_tags(tags)
+
+    decompressed = lz77_decompress(tags)
+    print("Decompressed string:", decompressed)
+    print("Compression successful:", decompressed == word)
+
+
+if __name__ == "__main__":
+    main()
