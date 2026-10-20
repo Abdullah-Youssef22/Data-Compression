@@ -40,3 +40,40 @@ def LZW_decompress(compressed_data):
 
         current_string = entry
     return ''.join(decompressed_data)
+
+def main():
+    while True:
+        print("\n===== LZW Compression System =====")
+        print("1. Compress")
+        print("2. Decompress")
+        print("3. Exit")
+
+        choice = input("Choose an operation: ")
+
+        if choice == "1":
+            text = input("Enter the string to compress: ")
+            compressed = LZW_compress(text)
+            print("Compressed data:", compressed)
+
+        elif choice == "2":
+            try:
+                codes = list(map(int, input(
+                    "Enter compressed codes separated by spaces: "
+                ).split()))
+
+                decompressed = LZW_decompress(codes)
+                print("Decompressed data:", decompressed)
+
+            except (ValueError, IndexError) as error:
+                print("Error:", error)
+
+        elif choice == "3":
+            print("Exiting program...")
+            break
+
+        else:
+            print("Invalid choice. Please choose 1, 2, or 3.")
+
+
+if __name__ == "__main__":
+    main()
